@@ -44,7 +44,7 @@ jobs:
 
     - name: Tag imagen Backend Despacho
       run: |
-        docker tag innovatechv1-backend-despacho:latest ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
+        docker tag innovatechv1-backend-despacho:latest ${{secrets.ECR_REPO_URL_BACKEND }}:latest
 
     - name: Push imagen Backend Despacho
       run: |
