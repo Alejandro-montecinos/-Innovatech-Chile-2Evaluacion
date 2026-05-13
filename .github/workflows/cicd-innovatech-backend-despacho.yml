@@ -4,14 +4,13 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "backend/**"
+      - "backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO/**"
 
 jobs:
   build-push-deploy-backend:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout código
       uses: actions/checkout@v4
 
@@ -34,43 +33,37 @@ jobs:
 
     - name: Build Spring Boot
       run: |
-        cd backend
+        cd backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
         chmod +x mvnw
         ./mvnw clean package -DskipTests
 
-    - name: Build imagen Backend
+    - name: Build imagen Backend Despacho
       run: |
-        cd backend
-        docker build -t despacho-backend .
+        cd backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+        docker build -t innovatechv1-backend-despacho .
 
-    - name: Tag imagen Backend
+    - name: Tag imagen Backend Despacho
       run: |
-        docker tag despacho-backend:latest ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
+        docker tag innovatechv1-backend-despacho:latest ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
 
-    - name: Push imagen Backend
+    - name: Push imagen Backend Despacho
       run: |
         docker push ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
 
-    - name: Desplegar Backend vía SSM
+    - name: Desplegar Backend Despacho vía SSM
       run: |
         aws ssm send-command \
           --instance-ids "${{ secrets.EC2_BACKEND_INSTANCE_ID }}" \
           --document-name "AWS-RunShellScript" \
-          --comment "Actualizar backend despacho desde ECR" \
+          --comment "Deploy innovatechv1-backend-despacho" \
           --parameters '{
             "commands":[
               "set -e",
               "aws ecr get-login-password --region '${{ secrets.AWS_REGION }}' | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}",
               "docker pull ${{ secrets.ECR_REPO_URL_BACKEND }}:latest",
-              "docker stop despacho-backend || true",
-              "docker rm despacho-backend || true",
-              "docker run -d --name innovatechv1-backend-despacho -p 8081:8081 \
-              -e DB_ENDPOINT=${{ secrets.DB_IP_PRIVADA }} \
-              -e DB_PORT=${{ secrets.DB_PORT }} \
-              -e DB_NAME=${{ secrets.DB_NAME_DESPACHO }} \
-              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              ${{ secrets.ECR_REPO_URL_BACKEND }}:latest"
+              "docker stop innovatechv1-backend-despacho || true",
+              "docker rm innovatechv1-backend-despacho || true",
+              "docker run -d --name innovatechv1-backend-despacho --restart always -p 8081:8081 -e DB_IP_PRIVADA=${{ secrets.DB_IP_PRIVADA }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME_DESPACHO }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ secrets.ECR_REPO_URL_BACKEND }}:latest"
             ]
           }' \
           --output text

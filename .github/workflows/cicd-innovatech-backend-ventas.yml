@@ -4,14 +4,13 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "backend-ventas/**"
+      - "backend/back-Ventas_SpringBoot/Springboot-API-REST/**"
 
 jobs:
   build-push-deploy-backend:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout código
       uses: actions/checkout@v4
 
@@ -34,13 +33,13 @@ jobs:
 
     - name: Build Spring Boot
       run: |
-        cd backend-ventas
+        cd backend/back-Ventas_SpringBoot/Springboot-API-REST
         chmod +x mvnw
         ./mvnw clean package -DskipTests
 
     - name: Build imagen Backend Ventas
       run: |
-        cd backend-ventas
+        cd backend/back-Ventas_SpringBoot/Springboot-API-REST
         docker build -t innovatechv1-backend-ventas .
 
     - name: Tag imagen Backend Ventas
@@ -64,13 +63,7 @@ jobs:
               "docker pull ${{ secrets.ECR_REPO_URL_BACKEND_VENTAS }}:latest",
               "docker stop innovatechv1-backend-ventas || true",
               "docker rm innovatechv1-backend-ventas || true",
-              "docker run -d --name innovatechv1-backend-ventas -p 8082:8082 \
-              -e DB_ENDPOINT=${{ secrets.DB_IP_PRIVADA }} \
-              -e DB_PORT=${{ secrets.DB_PORT }} \
-              -e DB_NAME=${{ secrets.DB_NAME_VENTAS }} \
-              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              ${{ secrets.ECR_REPO_URL_BACKEND_VENTAS }}:latest"
+              "docker run -d --name innovatechv1-backend-ventas --restart always -p 8082:8082 -e DB_IP_PRIVADA=${{ secrets.DB_IP_PRIVADA }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME_VENTAS }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ secrets.ECR_REPO_URL_BACKEND_VENTAS }}:latest"
             ]
           }' \
           --output text
