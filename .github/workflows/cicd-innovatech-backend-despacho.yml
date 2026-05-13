@@ -51,19 +51,19 @@ jobs:
         docker push ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
 
     - name: Desplegar Backend Despacho vía SSM
-  run: |
-    aws ssm send-command \
-      --instance-ids "${{ secrets.EC2_BACKEND_INSTANCE_ID }}" \
-      --document-name "AWS-RunShellScript" \
-      --comment "Deploy innovatechv1-backend-despacho" \
-      --parameters '{
-        "commands":[
-          "set -e",
-          "aws ecr get-login-password --region '${{ secrets.AWS_REGION }}' | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}",
-          "docker pull ${{ secrets.ECR_REPO_URL_BACKEND }}:latest",
-          "docker stop innovatechv1-backend-despacho || true",
-          "docker rm innovatechv1-backend-despacho || true",
-          "docker run -d --name innovatechv1-backend-despacho --restart always -p 8081:8081 -e DB_IP_PRIVADA=${{ secrets.DB_IP_PRIVADA }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME_DESPACHO }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ secrets.ECR_REPO_URL_BACKEND }}:latest"
-        ]
-      }' \
-      --output text
+      run: |
+       aws ssm send-command \
+          --instance-ids "${{ secrets.EC2_BACKEND_INSTANCE_ID }}" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy innovatechv1-backend-despacho" \
+          --parameters '{
+            "commands":[
+             "set -e",
+              "aws ecr get-login-password --region '${{ secrets.AWS_REGION }}' | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}",
+              "docker pull ${{ secrets.ECR_REPO_URL_BACKEND }}:latest",
+              "docker stop innovatechv1-backend-despacho || true",
+              "docker rm innovatechv1-backend-despacho || true",
+              "docker run -d --name innovatechv1-backend-despacho --restart always -p 8081:8081 -e DB_IP_PRIVADA=${{ secrets.DB_IP_PRIVADA }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME_DESPACHO }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ secrets.ECR_REPO_URL_BACKEND }}:latest"
+            ]
+         }' \
+          --output text
